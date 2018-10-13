@@ -48,9 +48,7 @@ app.post('/links',
       return res.sendStatus(404);
     }
 
-    return models.Links.get({
-        url
-      })
+    return models.Links.get({url})
       .then(link => {
         if (link) {
           throw link;
@@ -120,7 +118,7 @@ app.post('/login',
       .then( user => {
         if (user === undefined) {
           // not a member
-          console.log('not a member');
+          // console.log('not a member');
           res.redirect('/login');
         } else {
           let password = user.password;
@@ -128,11 +126,11 @@ app.post('/login',
           let checker = models.Users.compare(attemptedPW, password, salt);
           
           if (checker) {
-            console.log('member');
+            // console.log('member');
             res.redirect('/');
             //TO DO: Send user to logged in page
           } else {
-            console.log('Wrong PW'); 
+            // console.log('Wrong PW'); 
             res.redirect('/login');
           }
         }
@@ -163,9 +161,7 @@ app.post('/login',
 
 app.get('/:code', (req, res, next) => {
 
-  return models.Links.get({
-      code: req.params.code
-    })
+  return models.Links.get({code: req.params.code})
     .tap(link => {
 
       if (!link) {
