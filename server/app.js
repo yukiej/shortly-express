@@ -87,12 +87,16 @@ app.get('/signup',
 
 app.post('/signup',
   (req, res) => {
-    models.Users.create(req.body)
-      .then( () => {
-        res.status(201).send('Signed Up');
-      })
-      .error(error => {
-        res.status(500).send(error);
+    let userId = req.body.username;
+    let attemptedPW = req.body.password;
+    models.Users.get({username: userId})
+      .then(user => {
+        if (user === undefined) {
+          models.Users.create(req.body);
+          res.redirect('/');
+        } else {
+          res.redirect('/signup');
+        }
       });
   });
 /************************************************************/
@@ -117,7 +121,7 @@ app.post('/login',
         if (user === undefined) {
           // not a member
           console.log('not a member');
-          res.status(500).send('not a member');
+          res.redirect('/login');
         } else {
           let password = user.password;
           let salt = user.salt;
@@ -125,11 +129,11 @@ app.post('/login',
           
           if (checker) {
             console.log('member');
-            res.status(200).send('Logged In');
+            res.redirect('/');
             //TO DO: Send user to logged in page
           } else {
             console.log('Wrong PW'); 
-            res.status(500).send('Wrong PW');
+            res.redirect('/login');
           }
         }
       });
