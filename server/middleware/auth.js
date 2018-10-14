@@ -14,7 +14,8 @@ module.exports.createSession = (req, res, next) => {
         var hash = row.hash;
         req.session = { hash: hash };
         // console.log("Before cookies: ", res.cookies);
-        res.cookies = { shortlyid: {value: hash} };
+        // res.cookies = { shortlyid: {value: hash} };
+        res.cookie('shortlyid', hash);
         // console.log("After cookies: ", res.cookies);
         next();
       });
@@ -34,11 +35,11 @@ module.exports.createSession = (req, res, next) => {
               });
           } else {
             req.session = { hash: hash };
-            console.log('SESSION OBJ: ', req.session);
+            // console.log('SESSION OBJ: ', req.session);
             next();
           }
         } else {
-          console.log('no data in session table');
+          // console.log('no data in session table');
           models.Sessions.create()
             .then((prom) => {
               var sessionId = prom.insertId;
@@ -47,7 +48,7 @@ module.exports.createSession = (req, res, next) => {
             .then((row) => {
               var hash = row.hash;
               req.session = { hash: hash };
-              res.cookies = { shortlyid: {value: hash} };
+              res.cookie('shortlyid', hash);
               next();
             });
         }

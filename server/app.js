@@ -21,23 +21,29 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/',
   (req, res) => {
-    res.render('index');
+    Auth.createSession(req, res, () => {
+      res.render('index'); 
+    });
   });
 
 app.get('/create',
   (req, res) => {
-    res.render('index');
+    Auth.createSession(req, res, () => {
+      res.render('index');
+    });
   });
 
 app.get('/links',
   (req, res, next) => {
-    models.Links.getAll()
-      .then(links => {
-        res.status(200).send(links);
-      })
-      .error(error => {
-        res.status(500).send(error);
-      });
+    Auth.createSession(req, res, () => {
+      models.Links.getAll()
+        .then(links => {
+          res.status(200).send(links);
+        })
+        .error(error => {
+          res.status(500).send(error);
+        });
+    });
   });
 
 app.post('/links',
@@ -80,22 +86,26 @@ app.post('/links',
 
 app.get('/signup',
   (req, res) => {
-    res.render('signup');
+    Auth.createSession(req, res, () => {
+      res.render('signup');
+    });
   });
 
 app.post('/signup',
   (req, res) => {
-    let userId = req.body.username;
-    let attemptedPW = req.body.password;
-    models.Users.get({username: userId})
-      .then(user => {
-        if (user === undefined) {
-          models.Users.create(req.body);
-          res.redirect('/');
-        } else {
-          res.redirect('/signup');
-        }
-      });
+    Auth.createSession(req, res, () => {
+      let userId = req.body.username;
+      let attemptedPW = req.body.password;
+      models.Users.get({username: userId})
+        .then(user => {
+          if (user === undefined) {
+            models.Users.create(req.body);
+            res.redirect('/');
+          } else {
+            res.redirect('/signup');
+          }
+        });
+    });
   });
 /************************************************************/
 // Write your authentication routes here
@@ -103,54 +113,40 @@ app.post('/signup',
 
 app.get('/login',
   (req, res) => {
-    res.render('login');
+    Auth.createSession(req, res, () => {
+      res.render('login');
+    });
   });
 
 app.post('/login',
   (req, res) => {
-    //{ username: 'name', password: 'qw' }
-    
-    let userId = req.body.username;
-    let attemptedPW = req.body.password;
-    
-    // console.log('USER IS: ', userId, password);
-    models.Users.get({username: userId})
-      .then( user => {
-        if (user === undefined) {
-          // not a member
-          // console.log('not a member');
-          res.redirect('/login');
-        } else {
-          let password = user.password;
-          let salt = user.salt;
-          let checker = models.Users.compare(attemptedPW, password, salt);
-          
-          if (checker) {
-            // console.log('member');
-            res.redirect('/');
-            //TO DO: Send user to logged in page
-          } else {
-            // console.log('Wrong PW'); 
-            res.redirect('/login');
-          }
-        }
-      });
+    Auth.createSession(req, res, () => {
+      let userId = req.body.username;
+      let attemptedPW = req.body.password;
       
-    // models.Users.getAll()
-    //   .then(eachUser => {
-    //     console.log(eachUser);
-    //     let allUserArr = eachUser.map( e => {
-    //       return e.username;
-    //     });
-    //     if ( allUserArr.includes(userId) ) { 
-    //       // the person is a member!
-    //       // let's compare the password
-    //       console.log('member'); 
-    //     } else {
-    //       // the person is a not member!
-    //       console.log('not a member'); 
-    //     }
-    //   });
+      models.Users.get({username: userId})
+        .then( user => {
+          if (user === undefined) {
+            res.redirect('/login');
+          } else {
+            let password = user.password;
+            let salt = user.salt;
+            let checker = models.Users.compare(attemptedPW, password, salt);
+            
+            if (checker) {
+              //update sessions table and session object with user's username, id
+              //look up their userid from their username (from users table)
+                
+              db.query(`UPDATE sessions SET (userId, username) VALUES () WHERE hash = ${res.cookies.value}`, [userId, username, hash], function(error, result) 
+              
+              
+              res.redirect('/');
+            } else {
+              res.redirect('/login');
+            }
+          }
+        });
+    });
   });
 
 /************************************************************/
